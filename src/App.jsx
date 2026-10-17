@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import HeartBurst from './HeartBurst.jsx'
+import { useLikes } from './useLikes.js'
 
 const PHOTO = `${import.meta.env.BASE_URL}assets/lucky-portrait.png`
 
@@ -95,7 +97,25 @@ function CardStack() {
   )
 }
 
+function LikeButton({ count, liked, onToggle }) {
+  const label = count === null ? '…' : count.toLocaleString('en-IN')
+  return (
+    <button className="like" aria-pressed={liked} onClick={onToggle}
+      aria-label={`${liked ? 'Unlike' : 'Like'} this photo. ${label} likes`}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.7 4.5 7 4.5c2 0 3.5 1.1 5 3 1.5-1.9 3-3 5-3 3.3 0 5.4 3.3 4.2 6.7-1.7 4.7-9.2 9.3-9.2 9.3z" /></svg>
+      <span key={label} className="n pop">{label}</span>
+    </button>
+  )
+}
+
 export default function App() {
+  const hearts = useRef(null)
+  const { count, liked, toggle } = useLikes()
+  const onLike = e => {
+    const r = e.currentTarget.getBoundingClientRect()
+    if (!liked) hearts.current?.fire(r.left + r.width / 2, r.top + r.height / 2)
+    toggle()
+  }
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
   useReveal()
@@ -134,6 +154,7 @@ export default function App() {
               <div className="ring" />
               <div className="disc"><Photo eager /></div>
               <div className="mini" aria-hidden="true"><Photo pos="40% 38%" /></div>
+              <LikeButton count={count} liked={liked} onToggle={onLike} />
             </div>
           </div>
           <a className="scroll" href="#about" aria-label="Scroll to About"><i /></a>
@@ -192,6 +213,7 @@ export default function App() {
         <p>Welcome to World Healing</p>
         <p>© {new Date().getFullYear()} Lucky Kumar</p>
       </footer>
+      <HeartBurst ref={hearts} />
     </>
   )
 }
